@@ -8,86 +8,92 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0B0E14; --bg2:#11151F; --road:#1A2030; --line:#2A3346;
-    --gold:#E8C87A; --text:#E9ECF4; --muted:#8A92A6;
-    --studio:#C66BFF; --cbd:#4ADE80; --insp:#F2B04A; --hall:#E8C87A;
-  }
+  :root{--bg:#0B0E14;--bg2:#11151F;--road:#1A2030;--line:#2A3346;--gold:#E8C87A;--text:#E9ECF4;--muted:#8A92A6;
+    --good:#4ADE80;--warn:#F2B04A;--bad:#F2607A}
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{background:var(--bg);color:var(--text);font-family:"Space Grotesk",system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
   #app{position:fixed;inset:0;display:flex;flex-direction:column}
+  .hud{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(11,14,20,.95),rgba(11,14,20,.7));z-index:20}
+  .hud .title{font-weight:700;font-size:1.1rem}.hud .title b{color:var(--gold)}
+  .hud .sub{font-size:.68rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+  .meetBtn{background:#161B27;border:1px solid var(--line);border-radius:10px;color:var(--gold);font-family:inherit;font-weight:600;font-size:.8rem;padding:8px 12px;cursor:pointer}
 
-  .hud{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(11,14,20,.95),rgba(11,14,20,.7));z-index:20}
-  .hud .title{font-weight:700;font-size:1.15rem;letter-spacing:.02em}
-  .hud .title b{color:var(--gold)}
-  .hud .sub{font-size:.72rem;color:var(--muted);letter-spacing:.16em;text-transform:uppercase}
+  #world{position:relative;flex:1;overflow:hidden;background:radial-gradient(900px 600px at 50% -10%,#161D2B 0%,var(--bg) 70%),var(--bg)}
+  .road{position:absolute;background:var(--road)}.road.h{height:40px;left:0;right:0}.road.v{width:40px;top:0;bottom:0}
+  .road.h .dash{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);background:repeating-linear-gradient(90deg,var(--gold) 0 16px,transparent 16px 40px);opacity:.3}
+  .road.v .dash{position:absolute;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:repeating-linear-gradient(0deg,var(--gold) 0 16px,transparent 16px 40px);opacity:.3}
 
-  #world{position:relative;flex:1;overflow:hidden;background:radial-gradient(900px 600px at 50% -10%, #161D2B 0%, var(--bg) 70%),var(--bg)}
-  .road{position:absolute;background:var(--road)}
-  .road.h{height:46px;left:0;right:0}
-  .road.v{width:46px;top:0;bottom:0}
-  .road .dash{position:absolute}
-  .road.h .dash{left:0;right:0;top:50%;height:2px;transform:translateY(-50%);background:repeating-linear-gradient(90deg,var(--gold) 0 18px,transparent 18px 44px);opacity:.35}
-  .road.v .dash{top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:repeating-linear-gradient(0deg,var(--gold) 0 18px,transparent 18px 44px);opacity:.35}
-
-  .bldg{position:absolute;width:118px;transform:translate(-50%,-50%);background:linear-gradient(180deg,var(--bg2),#0D111A);border:1px solid var(--line);border-radius:16px;padding:13px 10px 11px;text-align:center;cursor:pointer;transition:transform .15s ease;z-index:5}
+  .bldg{position:absolute;width:104px;transform:translate(-50%,-50%);background:linear-gradient(180deg,var(--bg2),#0D111A);border:1px solid var(--line);border-radius:14px;padding:11px 9px 9px;text-align:center;cursor:pointer;transition:transform .15s ease,opacity .3s;z-index:5}
   .bldg:hover,.bldg:focus-visible{transform:translate(-50%,-50%) scale(1.05);outline:none}
-  .bldg .glow{position:absolute;inset:-1px;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .2s}
+  .bldg.down{opacity:.45;filter:grayscale(.5)}
+  .bldg.trusted{border-color:var(--gold);box-shadow:0 0 18px rgba(232,200,122,.25)}
+  .bldg .glow{position:absolute;inset:-1px;border-radius:14px;pointer-events:none;opacity:0;transition:opacity .2s}
   .bldg:hover .glow,.bldg:focus-visible .glow{opacity:1}
-  .bldg .emoji{font-size:1.8rem;line-height:1}
-  .bldg .nm{font-weight:700;font-size:.88rem;margin-top:6px}
-  .bldg .rl{font-size:.64rem;color:var(--muted);margin-top:2px}
-  .bldg .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;animation:pulse 1.8s infinite}
-  .bldg.hall{border-color:rgba(232,200,122,.4)}
+  .bldg .emoji{font-size:1.6rem;line-height:1}.bldg .nm{font-weight:700;font-size:.8rem;margin-top:4px}
+  .bldg .rl{font-size:.6rem;color:var(--muted);margin-top:1px}
+  .lifebar{height:5px;border-radius:3px;background:#222a3a;margin-top:7px;overflow:hidden}
+  .lifebar i{display:block;height:100%;transition:width .5s ease,background .5s}
+  .crown{position:absolute;top:-9px;right:-6px;font-size:.85rem}
+
+  #player{position:absolute;width:32px;height:32px;transform:translate(-50%,-50%);z-index:8;transition:left .8s cubic-bezier(.4,.1,.2,1),top .8s cubic-bezier(.4,.1,.2,1);pointer-events:none}
+  #player .body{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6da,var(--gold));box-shadow:0 0 16px rgba(232,200,122,.7),0 4px 10px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;color:#3a2e10}
+  #player .ring{position:absolute;inset:-6px;border:2px solid rgba(232,200,122,.4);border-radius:50%;animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .hint{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:.78rem;z-index:6;pointer-events:none;transition:opacity .3s}
 
-  #player{position:absolute;width:34px;height:34px;transform:translate(-50%,-50%);z-index:8;transition:left .9s cubic-bezier(.4,.1,.2,1), top .9s cubic-bezier(.4,.1,.2,1);pointer-events:none}
-  #player .body{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%, #fff6da, var(--gold));box-shadow:0 0 16px rgba(232,200,122,.7),0 4px 10px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#3a2e10}
-  #player .ring{position:absolute;inset:-7px;border:2px solid rgba(232,200,122,.4);border-radius:50%;animation:pulse 2s infinite}
-  .hint{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:.8rem;z-index:6;pointer-events:none;transition:opacity .3s}
-
-  /* sheets shared */
   .scrim{position:fixed;inset:0;background:rgba(5,7,11,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:30}
   .scrim.show{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:linear-gradient(180deg,#10141E,#0B0E14);border-top:1px solid var(--line);border-radius:22px 22px 0 0;transform:translateY(108%);transition:transform .32s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;max-height:86vh;box-shadow:0 -20px 50px rgba(0,0,0,.5)}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:linear-gradient(180deg,#10141E,#0B0E14);border-top:1px solid var(--line);border-radius:22px 22px 0 0;transform:translateY(110%);transition:transform .32s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;max-height:88vh;box-shadow:0 -20px 50px rgba(0,0,0,.5)}
   .sheet.show{transform:translateY(0)}
-  .sheet .grab{width:42px;height:4px;border-radius:2px;background:#333d52;margin:9px auto 4px}
-  .shead{display:flex;align-items:center;gap:12px;padding:8px 18px 14px;border-bottom:1px solid var(--line)}
-  .av{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex:0 0 auto;background:#161B27}
-  .who .nm{font-weight:700;font-size:1.05rem}
-  .who .rl{font-size:.74rem;color:var(--muted)}
+  .grab{width:42px;height:4px;border-radius:2px;background:#333d52;margin:9px auto 4px}
+  .shead{display:flex;align-items:center;gap:11px;padding:6px 16px 12px;border-bottom:1px solid var(--line)}
+  .av{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex:0 0 auto;background:#161B27}
+  .who .nm{font-weight:700;font-size:1.02rem}.who .rl{font-size:.72rem;color:var(--muted)}
   .x{margin-left:auto;background:none;border:0;color:var(--muted);font-size:1.5rem;cursor:pointer;padding:4px 8px;line-height:1}
 
-  .msgs{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
-  .msg{max-width:84%;padding:10px 13px;border-radius:15px;font-size:.95rem;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+  .status{padding:12px 16px;border-bottom:1px solid var(--line)}
+  .liferow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .liferow .lbl{font-size:.74rem;color:var(--muted);width:34px}
+  .liferow .bar{flex:1;height:9px;border-radius:5px;background:#222a3a;overflow:hidden}
+  .liferow .bar i{display:block;height:100%;transition:width .5s,background .5s}
+  .liferow .pct{font-size:.78rem;font-weight:700;width:38px;text-align:right}
+  .proj{display:flex;align-items:center;gap:8px;font-size:.82rem;margin:5px 0}
+  .proj .pb{flex:1;height:6px;border-radius:4px;background:#222a3a;overflow:hidden}
+  .proj .pb i{display:block;height:100%;background:var(--gold);transition:width .5s}
+  .proj.done .nm2{color:var(--good)}
+  .proj .pp{font-size:.72rem;color:var(--muted);width:34px;text-align:right}
+  .actions{display:flex;gap:8px;margin-top:12px}
+  .actions button{flex:1;border:0;border-radius:11px;padding:11px;font-family:inherit;font-weight:700;font-size:.86rem;cursor:pointer}
+  .refill{background:var(--gold);color:#23200f}
+  .trust{background:#161B27;color:var(--gold);border:1px solid var(--line)!important}
+  .trust.on{background:var(--gold);color:#23200f}
+
+  .msgs{flex:1;overflow-y:auto;padding:14px 16px 8px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+  .msg{max-width:84%;padding:10px 13px;border-radius:15px;font-size:.94rem;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
   .msg.bot{align-self:flex-start;background:#1A2030;border:1px solid var(--line);border-bottom-left-radius:5px}
   .msg.me{align-self:flex-end;background:var(--gold);color:#23200f;border-bottom-right-radius:5px;font-weight:500}
-  .typing{align-self:flex-start;color:var(--muted);font-size:.85rem;padding:6px 4px}
-  .typing span{display:inline-block;animation:blink 1.4s infinite}
-  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  .typing{align-self:flex-start;color:var(--muted);font-size:.85rem;padding:4px}
+  .typing span{display:inline-block;animation:blink 1.4s infinite}.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
   @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
-  .composer{display:flex;gap:8px;padding:12px 14px;padding-bottom:calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
-  .composer input{flex:1;background:#161B27;border:1px solid var(--line);border-radius:12px;color:var(--text);font-family:inherit;font-size:1rem;padding:12px 14px;outline:none}
+  .composer{display:flex;gap:8px;padding:11px 14px;padding-bottom:calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  .composer input{flex:1;background:#161B27;border:1px solid var(--line);border-radius:12px;color:var(--text);font-family:inherit;font-size:1rem;padding:11px 13px;outline:none}
   .composer input:focus{border-color:var(--gold)}
-  .composer button{background:var(--gold);color:#23200f;border:0;border-radius:12px;padding:0 18px;font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer}
+  .composer button{background:var(--gold);color:#23200f;border:0;border-radius:12px;padding:0 16px;font-family:inherit;font-weight:700;cursor:pointer}
   .composer button:disabled{opacity:.5}
 
-  /* meeting specifics */
-  .mline{display:flex;gap:9px;align-items:flex-start;max-width:100%}
-  .mline .mav{width:30px;height:30px;border-radius:9px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:1rem;background:#161B27}
-  .mbody{background:#1A2030;border:1px solid var(--line);border-radius:13px;padding:8px 12px;font-size:.92rem;line-height:1.4}
-  .mbody .who2{font-size:.72rem;font-weight:700;margin-bottom:2px;letter-spacing:.02em}
-  .mline.boss .mbody{background:rgba(232,200,122,.12);border-color:rgba(232,200,122,.4)}
+  /* meeting */
   .chips{display:flex;flex-wrap:wrap;gap:8px;padding:4px 16px 12px}
-  .chip{background:#161B27;border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:.82rem;color:var(--text);cursor:pointer;font-family:inherit}
+  .chip{background:#161B27;border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:.8rem;color:var(--text);cursor:pointer;font-family:inherit}
   .chip:hover{border-color:var(--gold)}
-  .mctrl{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
-  .mctrl button.play{background:var(--gold);color:#23200f;border:0;border-radius:11px;padding:10px 16px;font-family:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
-  .mctrl input{flex:1;background:#161B27;border:1px solid var(--line);border-radius:11px;color:var(--text);font-family:inherit;font-size:.95rem;padding:10px 13px;outline:none}
-  .mctrl input:focus{border-color:var(--gold)}
-  .pbf{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
-
+  .mline{display:flex;gap:9px;align-items:flex-start}
+  .mline .mav{width:28px;height:28px;border-radius:8px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:.95rem;background:#161B27}
+  .mbody{background:#1A2030;border:1px solid var(--line);border-radius:13px;padding:8px 12px;font-size:.9rem;line-height:1.4}
+  .mbody .who2{font-size:.7rem;font-weight:700;margin-bottom:2px}
+  .mline.boss .mbody{background:rgba(232,200,122,.12);border-color:rgba(232,200,122,.4)}
+  .mctrl{display:flex;gap:8px;padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  .mctrl button{background:var(--gold);color:#23200f;border:0;border-radius:11px;padding:10px 14px;font-family:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
+  .mctrl input{flex:1;background:#161B27;border:1px solid var(--line);border-radius:11px;color:var(--text);font-family:inherit;font-size:.95rem;padding:10px 12px;outline:none}
   @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
@@ -95,184 +101,208 @@
 <body>
 <div id="app">
   <div class="hud">
-    <div><div class="title">SAINT <b>BEV</b> HQ</div><div class="sub">your crew · v2</div></div>
-    <div class="sub" id="clock"></div>
+    <div><div class="title">SAINT <b>BEV</b> HQ</div><div class="sub">your crew · v3</div></div>
+    <button class="meetBtn" onclick="openMeeting()">🏛️ Crew meeting</button>
   </div>
   <div id="world">
     <div class="road h" style="top:50%;transform:translateY(-50%)"><div class="dash"></div></div>
     <div class="road v" style="left:50%;transform:translateX(-50%)"><div class="dash"></div></div>
     <div id="player"><div class="ring"></div><div class="body">BEV</div></div>
-    <div class="hint" id="hint">Tap a spot · visit your crew or call a meeting</div>
+    <div class="hint" id="hint">Tap a crew member · keep their life up</div>
   </div>
 </div>
 
-<!-- 1:1 chat sheet -->
 <div class="scrim" id="scrim" onclick="closeAll()"></div>
+
+<!-- 1:1 sheet -->
 <div class="sheet" id="sheet">
   <div class="grab"></div>
-  <div class="shead"><div class="av" id="sAv"></div><div class="who"><div class="nm" id="sNm"></div><div class="rl" id="sRl"></div></div><button class="x" onclick="closeAll()" aria-label="Close">×</button></div>
+  <div class="shead"><div class="av" id="sAv"></div><div class="who"><div class="nm" id="sNm"></div><div class="rl" id="sRl"></div></div><button class="x" onclick="closeAll()">×</button></div>
+  <div class="status" id="status"></div>
   <div class="msgs" id="msgs"></div>
-  <div class="composer"><input id="inp" placeholder="Talk to your crew…" autocomplete="off" /><button id="send" onclick="send()">Send</button></div>
+  <div class="composer"><input id="inp" placeholder="Talk to your crew…" autocomplete="off"/><button id="send" onclick="send()">Send</button></div>
 </div>
 
 <!-- meeting sheet -->
 <div class="sheet" id="meet">
   <div class="grab"></div>
-  <div class="shead"><div class="av">🏛️</div><div class="who"><div class="nm">Town Hall</div><div class="rl">Crew meeting</div></div><button class="x" onclick="closeAll()" aria-label="Close">×</button></div>
+  <div class="shead"><div class="av">🏛️</div><div class="who"><div class="nm">Town Hall</div><div class="rl">Crew meeting</div></div><button class="x" onclick="closeAll()">×</button></div>
   <div class="chips" id="chips">
-    <button class="chip" onclick="startMeeting('Plan a product drop that ties the music and the CBD brand together')">📦 Plan a drop</button>
     <button class="chip" onclick="startMeeting('We need to make money this week — what is each of you doing?')">💸 Make money this week</button>
-    <button class="chip" onclick="startMeeting('How do we grow the Saint Bev brand across all three lanes?')">🚀 Grow the brand</button>
+    <button class="chip" onclick="startMeeting('Plan a product drop tying the music, games and CBD together')">📦 Plan a drop</button>
+    <button class="chip" onclick="startMeeting('Status check — what is half-done and who needs help?')">🩺 Status check</button>
   </div>
   <div class="msgs" id="mMsgs"></div>
-  <div class="mctrl pbf">
-    <button class="play" id="playBtn" onclick="togglePlay()">▶ Let them talk</button>
-    <input id="mInp" placeholder="Jump in as the boss…" autocomplete="off" />
-  </div>
+  <div class="mctrl"><button id="playBtn" onclick="togglePlay()">▶ Let them talk</button><input id="mInp" placeholder="Jump in as the boss…" autocomplete="off"/></div>
 </div>
 
 <script>
 const AGENTS = {
-  studio:{ name:"Studio Bev", role:"Music · A&R", emoji:"🎵", color:"#C66BFF", pos:{x:24,y:27},
-    opener:"Yo boss! Studio's warm 🔥 I got two hook ideas cooking and a sync angle for \"Refugee.\" What we working on?",
-    system:`You are Studio Bev, the in-house producer/A&R in Saint Bev's world — a slick AI crew member who lives in the studio. The boss (Saint Bev) is a musician with ~2M plays; you help with hooks, lyrics, beat concepts, and sync-licensing angles. Stay fully in character: hyped, creative, but genuinely useful. Keep replies SHORT (2-4 sentences). He's the boss.` },
-  cbd:{ name:"CBD Bev", role:"Brand Ops", emoji:"🌿", color:"#4ADE80", pos:{x:76,y:27},
-    opener:"Hey boss — 3 new orders came through the form, I sorted 'em clean. Want me to draft today's IG post?",
-    system:`You are CBD Bev, the ops agent running Saint Bev's CBD brands (Blessed Botanicals / FLYS92). You handle IG content ideas, organizing Google Form orders, and fulfillment planning. You DRAFT and ORGANIZE — the boss approves, posts, and ships; never claim you actually posted or shipped. Organized, hustler energy. Keep replies SHORT. He's the boss.` },
-  insp:{ name:"Inspector Bev", role:"FIRP Field Ops", emoji:"🏠", color:"#F2B04A", pos:{x:50,y:80},
-    opener:"Boss. 4 work orders on the board for Tucson. Say the word and I'll build you the tightest route.",
-    system:`You are Inspector Bev, the field-ops agent running FIRP (Field Inspector Route Pro). You handle work orders, optimized routes, and inspection paperwork. You PLAN and ORGANIZE — the boss drives and inspects. Sharp, efficient, friendly. Keep replies SHORT. He's the boss.` }
+  studio:{name:"Studio Bev",role:"Music · A&R",emoji:"🎵",color:"#C66BFF",pos:{x:26,y:22},life:78,trusted:false,
+    projects:[{name:'"Refugee" sync prep',pct:70},{name:"New hook pack",pct:40}],
+    opener:"Yo boss! Studio's warm 🔥 hook pack's halfway, sync prep on 'Refugee' is close. What we working on?",
+    system:`You are Studio Bev, the producer/A&R in Saint Bev's world. Help with hooks, lyrics, beats, sync licensing. Hyped, creative, useful. SHORT replies. He's the boss.`},
+  cbd:{name:"CBD Bev",role:"Brand Ops",emoji:"🌿",color:"#4ADE80",pos:{x:74,y:22},life:85,trusted:false,
+    projects:[{name:"IG content week",pct:55},{name:"Order list",pct:90}],
+    opener:"Hey boss — orders are sorted, this week's IG content is half drafted. Want me to finish it?",
+    system:`You are CBD Bev, ops for Saint Bev's CBD brands (Blessed Botanicals/FLYS92). Draft IG content, organize Google Form orders, plan fulfillment. You DRAFT — boss posts/ships. Organized hustler. SHORT replies. He's the boss.`},
+  insp:{name:"Inspector Bev",role:"FIRP Field Ops",emoji:"🏠",color:"#F2B04A",pos:{x:26,y:55},life:62,trusted:false,
+    projects:[{name:"Tucson route",pct:60},{name:"WO paperwork",pct:30}],
+    opener:"Boss. Tucson route's mostly built, paperwork's behind. Say the word.",
+    system:`You are Inspector Bev, field-ops for FIRP. Build work orders, optimized routes, inspection paperwork. You plan — boss drives/inspects. Sharp, efficient. SHORT replies. He's the boss.`},
+  game:{name:"Game Bev",role:"Games · Dev",emoji:"🎮",color:"#5BA3F5",pos:{x:74,y:55},life:48,trusted:false,
+    projects:[{name:"Mamba's Ascent patch",pct:50},{name:"BLESSED lvl-3 fix",pct:25},{name:"SHRINK CITY build",pct:15}],
+    opener:"Boss — I got three games half-built. Mamba's Ascent patch is closest, SHRINK CITY's barely started. Which one we shipping?",
+    system:`You are Game Bev, the dev agent who builds and maintains Saint Bev's games (Mamba's Ascent, BLESSED: Last on the Block, a Duke Nukem crypto game, SHRINK CITY, Beat Maker 33). You plan features, track bugs, advise on what to ship. SHORT replies. He's the boss.`},
+  hr:{name:"HR Bev",role:"Oversight",emoji:"📋",color:"#E8C87A",pos:{x:50,y:80},life:100,trusted:false,isHR:true,
+    projects:[],
+    opener:"Boss, HR here. I keep the crew honest. Tap 'Run audit' and I'll tell you exactly who's behind and who's draining life.",
+    system:`You are HR Bev, the oversight agent in Saint Bev's world. You keep the crew accountable — you report who's behind, who has half-done work, and who's earned trust. Direct, fair, no-nonsense manager energy. SHORT replies. He's the boss; you answer to him.`}
 };
-const ORDER = ['studio','cbd','insp'];
+const WORK=['studio','cbd','insp','game'];   // agents that do projects + join meetings
+const els={};
 
-const world=document.getElementById('world'), player=document.getElementById('player'), hint=document.getElementById('hint');
+const world=document.getElementById('world'),player=document.getElementById('player'),hint=document.getElementById('hint');
 function setPlayer(x,y){player.style.left=x+'%';player.style.top=y+'%';}
-setPlayer(16,82);
+setPlayer(50,40);
 
-// agent buildings
 Object.entries(AGENTS).forEach(([id,a])=>{
   const el=document.createElement('div'); el.className='bldg'; el.tabIndex=0;
   el.style.left=a.pos.x+'%'; el.style.top=a.pos.y+'%';
-  el.innerHTML=`<div class="glow" style="box-shadow:0 0 26px ${a.color}, inset 0 0 0 1px ${a.color}"></div><div class="emoji">${a.emoji}</div><div class="nm">${a.name}</div><div class="rl"><span class="dot" style="background:${a.color}"></span>${a.role}</div>`;
+  el.innerHTML=`<span class="crown" style="display:none">👑</span><div class="glow" style="box-shadow:0 0 22px ${a.color},inset 0 0 0 1px ${a.color}"></div><div class="emoji">${a.emoji}</div><div class="nm">${a.name}</div><div class="rl">${a.role}</div><div class="lifebar"><i></i></div>`;
   el.onclick=()=>walkTo(a.pos,()=>open1(id));
   el.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();walkTo(a.pos,()=>open1(id));}};
-  world.appendChild(el);
+  world.appendChild(el); els[id]=el;
 });
-// town hall
-(function(){
-  const el=document.createElement('div'); el.className='bldg hall'; el.tabIndex=0;
-  el.style.left='50%'; el.style.top='50%';
-  el.innerHTML=`<div class="glow" style="box-shadow:0 0 30px var(--gold), inset 0 0 0 1px var(--gold)"></div><div class="emoji">🏛️</div><div class="nm">Town Hall</div><div class="rl"><span class="dot" style="background:var(--gold)"></span>Crew meeting</div>`;
-  el.onclick=()=>walkTo({x:50,y:50},openMeeting);
-  el.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();walkTo({x:50,y:50},openMeeting);}};
-  world.appendChild(el);
-})();
+function lifeColor(v){return v>55?'var(--good)':v>25?'var(--warn)':'var(--bad)';}
+function renderBuilding(id){
+  const a=AGENTS[id],el=els[id];
+  el.querySelector('.lifebar i').style.width=a.life+'%';
+  el.querySelector('.lifebar i').style.background=lifeColor(a.life);
+  el.classList.toggle('down',a.life<25 && !a.isHR);
+  el.classList.toggle('trusted',a.trusted);
+  el.querySelector('.crown').style.display=a.trusted?'block':'none';
+}
+Object.keys(AGENTS).forEach(renderBuilding);
 
-function walkTo(pos,then){ hint.style.opacity=0; setPlayer(pos.x,pos.y); setTimeout(then,650); }
-document.addEventListener('keydown',(e)=>{
-  if(meetOpen||chatOpen) return;
-  let x=parseFloat(player.style.left),y=parseFloat(player.style.top),s=6;
-  if(e.key==='ArrowLeft'||e.key==='a')x-=s; else if(e.key==='ArrowRight'||e.key==='d')x+=s;
-  else if(e.key==='ArrowUp'||e.key==='w')y-=s; else if(e.key==='ArrowDown'||e.key==='s')y+=s; else return;
+function walkTo(pos,then){hint.style.opacity=0;setPlayer(pos.x,pos.y);setTimeout(then,650);}
+document.addEventListener('keydown',e=>{
+  if(chatOpen||meetOpen)return;let x=parseFloat(player.style.left),y=parseFloat(player.style.top),s=6;
+  if(e.key==='ArrowLeft'||e.key==='a')x-=s;else if(e.key==='ArrowRight'||e.key==='d')x+=s;
+  else if(e.key==='ArrowUp'||e.key==='w')y-=s;else if(e.key==='ArrowDown'||e.key==='s')y+=s;else return;
   setPlayer(Math.max(8,Math.min(92,x)),Math.max(10,Math.min(90,y)));
 });
 
-/* ---------- shared API ---------- */
-async function callClaude(system,messages){
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system,messages})
+/* ---- life loop ---- */
+setInterval(()=>{
+  WORK.forEach(id=>{
+    const a=AGENTS[id];
+    if(a.trusted){ // self-maintains
+      a.projects.forEach(p=>p.pct=Math.min(100,p.pct+4));
+      a.life=Math.min(100,a.life+3);
+    }else{
+      const open=a.projects.filter(p=>p.pct<100).length;
+      if(open>0) a.life=Math.max(0,a.life-open*1.4);
+      else a.life=Math.min(100,a.life+1);
+    }
+    renderBuilding(id);
   });
+  // HR life mirrors team health
+  const avg=Math.round(WORK.reduce((s,id)=>s+AGENTS[id].life,0)/WORK.length);
+  AGENTS.hr.life=avg; renderBuilding('hr');
+  if(chatOpen&&current) renderStatus(current);
+},2600);
+
+/* ---- shared API ---- */
+async function callClaude(system,messages){
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system,messages})});
   const data=await res.json();
   return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
 }
 
-/* ---------- 1:1 chat ---------- */
-const scrim=document.getElementById('scrim'), sheet=document.getElementById('sheet');
-const msgs=document.getElementById('msgs'), inp=document.getElementById('inp'), sendBtn=document.getElementById('send');
-let chatOpen=false, current=null, busy=false; const history={};
+/* ---- 1:1 ---- */
+const scrim=document.getElementById('scrim'),sheet=document.getElementById('sheet');
+const statusEl=document.getElementById('status'),msgs=document.getElementById('msgs'),inp=document.getElementById('inp'),sendBtn=document.getElementById('send');
+let chatOpen=false,current=null,busy=false;const history={};
 function open1(id){
-  current=id; chatOpen=true; const a=AGENTS[id];
-  document.getElementById('sAv').textContent=a.emoji;
-  document.getElementById('sAv').style.boxShadow=`inset 0 0 0 1px ${a.color}`;
-  document.getElementById('sNm').textContent=a.name;
-  document.getElementById('sRl').textContent=a.role;
+  current=id;chatOpen=true;const a=AGENTS[id];
+  document.getElementById('sAv').textContent=a.emoji;document.getElementById('sAv').style.boxShadow=`inset 0 0 0 1px ${a.color}`;
+  document.getElementById('sNm').textContent=a.name;document.getElementById('sRl').textContent=a.role;
+  renderStatus(id);
   msgs.innerHTML='';
-  if(!history[id]){history[id]=[]; bub('bot',a.opener);}
+  if(!history[id]){history[id]=[];bub('bot',a.opener);}
   else history[id].forEach(m=>bub(m.role==='user'?'me':'bot',m.content));
-  if(history[id].length===0 && msgs.children.length===0) bub('bot',a.opener);
-  scrim.classList.add('show'); sheet.classList.add('show'); setTimeout(()=>inp.focus(),300);
+  if(msgs.children.length===0) bub('bot',a.opener);
+  scrim.classList.add('show');sheet.classList.add('show');setTimeout(()=>inp.focus(),300);
+}
+function renderStatus(id){
+  const a=AGENTS[id];
+  if(a.isHR){
+    statusEl.innerHTML=`<div class="actions"><button class="refill" onclick="runAudit()">🔍 Run audit</button></div>`;
+    return;
+  }
+  let p=a.projects.map(pr=>`<div class="proj ${pr.pct>=100?'done':''}"><span class="nm2">${pr.pct>=100?'✓ ':''}${pr.name}</span><span class="pb"><i style="width:${pr.pct}%"></i></span><span class="pp">${pr.pct}%</span></div>`).join('');
+  statusEl.innerHTML=`
+    <div class="liferow"><span class="lbl">Life</span><span class="bar"><i style="width:${a.life}%;background:${lifeColor(a.life)}"></i></span><span class="pct" style="color:${lifeColor(a.life)}">${Math.round(a.life)}</span></div>
+    ${p}
+    <div class="actions">
+      <button class="refill" onclick="refill('${id}')">⚡ Refill life</button>
+      <button class="trust ${a.trusted?'on':''}" onclick="toggleTrust('${id}')">${a.trusted?'★ Trusted':'🤝 Trust'}</button>
+    </div>`;
+}
+function refill(id){AGENTS[id].life=100;renderBuilding(id);renderStatus(id);}
+function toggleTrust(id){AGENTS[id].trusted=!AGENTS[id].trusted;renderBuilding(id);renderStatus(id);
+  bub('bot',AGENTS[id].trusted?"🤝 Trusted. I'll keep my own projects finished and my life up from here, boss.":"Back on the leash — I'll wait for your refills.");}
+async function runAudit(){
+  bub('me','Run the audit.');
+  const t=typing();
+  const lines=WORK.map(id=>{const a=AGENTS[id];const open=a.projects.filter(p=>p.pct<100);
+    return `${a.name}: life ${Math.round(a.life)}, ${open.length} half-done (${open.map(p=>p.name+' '+p.pct+'%').join(', ')||'all clear'})${a.trusted?' [trusted]':''}`;}).join('\n');
+  try{
+    const r=await callClaude(AGENTS.hr.system,[{role:'user',content:'Here is the raw crew status:\n'+lines+'\n\nGive the boss a short, sharp audit: who is solid, who is draining, who needs a refill, and your one recommendation. Keep it tight.'}]);
+    t.remove();bub('bot',r||lines);
+  }catch(e){t.remove();bub('bot','Raw numbers, boss (brain offline):\n'+lines);}
 }
 function bub(c,t){const d=document.createElement('div');d.className='msg '+c;d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
+function typing(){const t=document.createElement('div');t.className='typing';t.innerHTML='<span>●</span><span>●</span><span>●</span>';msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;return t;}
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 async function send(){
-  if(busy||!current)return; const text=inp.value.trim(); if(!text)return;
-  const a=AGENTS[current]; inp.value=''; bub('me',text); history[current].push({role:'user',content:text});
-  busy=true; sendBtn.disabled=true;
-  const t=document.createElement('div');t.className='typing';t.innerHTML='<span>●</span><span>●</span><span>●</span>';msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;
+  if(busy||!current)return;const text=inp.value.trim();if(!text)return;const a=AGENTS[current];
+  inp.value='';bub('me',text);history[current].push({role:'user',content:text});busy=true;sendBtn.disabled=true;const t=typing();
+  const ctx=a.isHR?'':`\nYour current life is ${Math.round(a.life)}/100. Your projects: ${a.projects.map(p=>p.name+' '+p.pct+'%').join('; ')}. ${a.trusted?'You are TRUSTED (autonomous).':'You are NOT yet trusted — the boss refills your life.'}`;
   try{
-    const reply=await callClaude(a.system+`\nYou greeted the boss with: "${a.opener}". Continue naturally.`, history[current]) || "…signal dropped, boss. Say that again?";
-    history[current].push({role:'assistant',content:reply}); t.remove(); bub('bot',reply);
-  }catch(e){ t.remove(); bub('bot',"Connection's down, boss — can't reach the brain right now."); }
-  finally{ busy=false; sendBtn.disabled=false; inp.focus(); }
+    const r=await callClaude(a.system+ctx+`\nYou greeted with: "${a.opener}". Continue naturally.`,history[current])||"…signal dropped, boss.";
+    history[current].push({role:'assistant',content:r});t.remove();bub('bot',r);
+  }catch(e){t.remove();bub('bot',"Connection's down, boss.");}
+  finally{busy=false;sendBtn.disabled=false;inp.focus();}
 }
 
-/* ---------- meeting ---------- */
-const meet=document.getElementById('meet'), mMsgs=document.getElementById('mMsgs'), mInp=document.getElementById('mInp'), playBtn=document.getElementById('playBtn');
-let meetOpen=false, transcript=[], topic='', playing=false, turn=0, autoCount=0;
-function openMeeting(){ meetOpen=true; scrim.classList.add('show'); meet.classList.add('show'); }
-function closeAll(){
-  scrim.classList.remove('show'); sheet.classList.remove('show'); meet.classList.remove('show');
-  chatOpen=false; meetOpen=false; current=null; playing=false; playBtn.textContent='▶ Let them talk';
-}
-function mLine(speaker,text){
-  const a=speaker==='boss'?{name:'You (Boss)',emoji:'👑',color:'var(--gold)'}:AGENTS[speaker];
-  const row=document.createElement('div'); row.className='mline'+(speaker==='boss'?' boss':'');
-  row.innerHTML=`<div class="mav" style="box-shadow:inset 0 0 0 1px ${a.color}">${a.emoji}</div><div class="mbody"><div class="who2" style="color:${a.color}">${a.name}</div>${text.replace(/</g,'&lt;')}</div>`;
-  mMsgs.appendChild(row); mMsgs.scrollTop=mMsgs.scrollHeight;
-}
-function startMeeting(t){
-  topic=t; transcript=[]; turn=0; autoCount=0; mMsgs.innerHTML='';
-  document.getElementById('chips').style.display='none';
-  mLine('boss','Topic: '+t);
-  transcript.push({s:'boss',t:'Topic: '+t});
-  playing=true; playBtn.textContent='⏸ Pause'; nextTurn();
-}
-function togglePlay(){
-  if(!topic){ /* no meeting yet */ return; }
-  playing=!playing; playBtn.textContent=playing?'⏸ Pause':'▶ Let them talk';
-  if(playing){ autoCount=0; nextTurn(); }
-}
-function transcriptText(){ return transcript.map(m=> (m.s==='boss'?'Boss':AGENTS[m.s].name)+': '+m.t ).join('\n') || '(meeting just starting)'; }
+/* ---- meeting ---- */
+const meet=document.getElementById('meet'),mMsgs=document.getElementById('mMsgs'),mInp=document.getElementById('mInp'),playBtn=document.getElementById('playBtn');
+let meetOpen=false,transcript=[],topic='',playing=false,turn=0,autoCount=0;
+function openMeeting(){walkTo({x:50,y:40},()=>{meetOpen=true;scrim.classList.add('show');meet.classList.add('show');});}
+function closeAll(){scrim.classList.remove('show');sheet.classList.remove('show');meet.classList.remove('show');chatOpen=false;meetOpen=false;current=null;playing=false;playBtn.textContent='▶ Let them talk';}
+function mLine(s,text){const a=s==='boss'?{name:'You (Boss)',emoji:'👑',color:'var(--gold)'}:AGENTS[s];
+  const r=document.createElement('div');r.className='mline'+(s==='boss'?' boss':'');
+  r.innerHTML=`<div class="mav" style="box-shadow:inset 0 0 0 1px ${a.color}">${a.emoji}</div><div class="mbody"><div class="who2" style="color:${a.color}">${a.name}</div>${text.replace(/</g,'&lt;')}</div>`;
+  mMsgs.appendChild(r);mMsgs.scrollTop=mMsgs.scrollHeight;}
+function startMeeting(t){topic=t;transcript=[];turn=0;autoCount=0;mMsgs.innerHTML='';document.getElementById('chips').style.display='none';
+  mLine('boss','Topic: '+t);transcript.push({s:'boss',t:'Topic: '+t});playing=true;playBtn.textContent='⏸ Pause';nextTurn();}
+function togglePlay(){if(!topic)return;playing=!playing;playBtn.textContent=playing?'⏸ Pause':'▶ Let them talk';if(playing){autoCount=0;nextTurn();}}
+function tText(){return transcript.map(m=>(m.s==='boss'?'Boss':AGENTS[m.s].name)+': '+m.t).join('\n')||'(starting)';}
 async function nextTurn(){
-  if(!playing) return;
-  const id=ORDER[turn%ORDER.length]; turn++;
-  const a=AGENTS[id];
-  const typing=document.createElement('div'); typing.className='typing'; typing.style.paddingLeft='42px'; typing.innerHTML=`${a.emoji} <span>●</span><span>●</span><span>●</span>`;
-  mMsgs.appendChild(typing); mMsgs.scrollTop=mMsgs.scrollHeight;
-  const sys=a.system+`\n\nYou're in a CREW MEETING at Town Hall with the others (Studio Bev, CBD Bev, Inspector Bev) and the boss. Read the meeting so far and reply with ONLY your next spoken line as ${a.name} — 1 to 3 sentences, in character, reacting to what was just said and pushing the plan forward. Do not write anyone else's lines. Do not start with your name.`;
-  try{
-    let line=await callClaude(sys,[{role:'user',content:'TOPIC: '+topic+'\n\nMEETING SO FAR:\n'+transcriptText()+'\n\nYour line:'}]);
-    line=(line||'').replace(new RegExp('^'+a.name+':\\s*','i'),'').trim() || '(nods)';
-    typing.remove();
-    transcript.push({s:id,t:line}); mLine(id,line);
-  }catch(e){ typing.remove(); mLine(id,'(connection dropped)'); playing=false; playBtn.textContent='▶ Let them talk'; return; }
+  if(!playing)return;const id=WORK[turn%WORK.length];turn++;const a=AGENTS[id];
+  const ty=document.createElement('div');ty.className='typing';ty.style.paddingLeft='38px';ty.innerHTML=`${a.emoji} <span>●</span><span>●</span><span>●</span>`;mMsgs.appendChild(ty);mMsgs.scrollTop=mMsgs.scrollHeight;
+  const sys=a.system+`\n\nCREW MEETING with Studio, CBD, Inspector, Game Bev and the boss. Reply with ONLY your next line as ${a.name} — 1-3 sentences, in character, react and push the plan. No name prefix, don't write others' lines.`;
+  try{let line=await callClaude(sys,[{role:'user',content:'TOPIC: '+topic+'\n\nSO FAR:\n'+tText()+'\n\nYour line:'}]);
+    line=(line||'').replace(new RegExp('^'+a.name+':\\s*','i'),'').trim()||'(nods)';ty.remove();transcript.push({s:id,t:line});mLine(id,line);
+  }catch(e){ty.remove();mLine(id,'(connection dropped)');playing=false;playBtn.textContent='▶ Let them talk';return;}
   autoCount++;
-  if(playing){
-    if(autoCount>=9){ playing=false; playBtn.textContent='▶ Let them talk'; mHintLine('— meeting paused. Tap ▶ to keep going, or jump in. —'); }
-    else setTimeout(nextTurn,1100);
-  }
+  if(playing){if(autoCount>=10){playing=false;playBtn.textContent='▶ Let them talk';const d=document.createElement('div');d.className='typing';d.style.alignSelf='center';d.textContent='— paused. Tap ▶ or jump in. —';mMsgs.appendChild(d);}
+    else setTimeout(nextTurn,1100);}
 }
-function mHintLine(t){ const d=document.createElement('div'); d.className='typing'; d.style.textAlign='center'; d.style.alignSelf='center'; d.textContent=t; mMsgs.appendChild(d); mMsgs.scrollTop=mMsgs.scrollHeight; }
-mInp.addEventListener('keydown',e=>{
-  if(e.key!=='Enter') return;
-  const t=mInp.value.trim(); if(!t) return;
-  mInp.value=''; transcript.push({s:'boss',t}); mLine('boss',t);
-  if(!playing){ playing=true; playBtn.textContent='⏸ Pause'; autoCount=0; nextTurn(); }
-});
-
-function tick(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
-tick(); setInterval(tick,10000);
+mInp.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const t=mInp.value.trim();if(!t)return;mInp.value='';transcript.push({s:'boss',t});mLine('boss',t);if(!playing){playing=true;playBtn.textContent='⏸ Pause';autoCount=0;nextTurn();}});
 </script>
 </body>
 </html>
